@@ -4,7 +4,6 @@
 ##############################################################################
 from openerp import models, api
 
-
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
@@ -13,6 +12,20 @@ class StockPicking(models.Model):
         self.ensure_one()
         line_obj = self.env['purchase.cost.distribution.line']
         lines = line_obj.search([('picking_id', '=', self.id)])
+        if not lines:
+            landed_cost = self.env['purchase.cost.distribution'].create({
+                'company_id': self.env.user.company_id.id,
+            })
+            pickings = []
+            pickings.append((4, [self.id]))
+            wizard = self.env['picking.import.wizard'].with_context(
+                active_id=landed_cost.id
+            ).create({
+                'supplier': self.partner_id.id,
+                'pickings': pickings
+            })
+            wizard.action_import_picking()
+            lines = landed_cost.cost_lines
         if lines:
             mod_obj = self.env['ir.model.data']
             model, action_id = tuple(
