@@ -120,7 +120,7 @@ class ProcurementOrder(models.Model):
         plan_obj = self.env['procurement.plan']
         project_obj = self.env['project.project']
         vals = {'name': _('Generated from sale order: ') + sale.name,
-                'warehouse_id': self.warehouse_id.id,
+                'warehouse_id': self.warehouse_id.id or sale.warehouse_id.id,
                 'from_date': self.date_planned,
                 'to_date': self.date_planned,
                 'procurement_ids': [(4, self.id)]}
@@ -135,6 +135,12 @@ class ProcurementOrder(models.Model):
             for proc in procurement_plan.procurement_ids:
                 if proc.show_button_create:
                     proc.button_create_lower_levels()
+            if self.company_id.proc_plan_level >= 0:
+                procurements = procurement_plan.procurement_ids.filtered(
+                    lambda x: x.level >= 0 and
+                    x.level <= x.company_id.proc_plan_level and
+                    x.state == 'confirmed')
+                procurements.run()
 
     def _create_procurement_lower_levels(self, plan_id):
         plan_obj = self.env['procurement.plan']

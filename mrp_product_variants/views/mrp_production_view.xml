@@ -19,6 +19,7 @@
                 <xpath expr="//field[@name='bom_line_ids']//field[@name='attribute_value_ids']"
                        position="attributes">
                     <attribute name="options">{'no_create': True}</attribute>
+                    <attribute name="domain" />
                 </xpath>
             </field>
         </record>
@@ -107,6 +108,9 @@
                 </field>
                 <field name="product_id" position="attributes">
                     <attribute name="string">Product Variants</attribute>
+                </field>
+                <field name="product_qty" position="attributes">
+                    <attribute name="on_change">onchange_product_qty(product_id, product_qty)</attribute>
                 </field>
             </field>
         </record>
